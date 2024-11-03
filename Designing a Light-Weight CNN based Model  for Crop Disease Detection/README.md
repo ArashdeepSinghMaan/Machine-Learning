@@ -1,1 +1,1 @@
-
+Dataset is available at https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset
