@@ -9,7 +9,7 @@ import json
 import os
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
-# Define the CNN architecture (a classical CNN example)
+
 class SimpleCNN(nn.Module):
     def __init__(self, num_classes):
         super(SimpleCNN, self).__init__()
@@ -22,12 +22,12 @@ class SimpleCNN(nn.Module):
     def forward(self, x):
         x = self.pool(torch.relu(self.conv1(x)))
         x = self.pool(torch.relu(self.conv2(x)))
-        x = x.view(-1, 64 * 56 * 56)  # Flatten the tensor
+        x = x.view(-1, 64 * 56 * 56)  
         x = torch.relu(self.fc1(x))
         x = self.fc2(x)
         return x
 
-# Data transformations for training and validation sets
+
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomResizedCrop(224),
@@ -43,7 +43,7 @@ data_transforms = {
     ]),
 }
 
-# Create datasets and dataloaders
+
 def create_dataloaders(data_dir):
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
                       for x in ['train', 'val']}
@@ -56,20 +56,20 @@ def create_dataloaders(data_dir):
 if __name__ == '__main__':
     data_dir = r"C:\Users\AMREEN\OneDrive - Indian Institute of Technology Jodhpur\Desktop\SEM 3\FML CSL7670\Project\archive\New Plant Diseases Dataset(Augmented)\New Plant Diseases Dataset(Augmented)"  # Update with your data directory
     
-    # Create datasets and dataloaders
+
     image_datasets, dataloaders, dataset_sizes, class_names = create_dataloaders(data_dir)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    # Instantiate the classical CNN model
+ 
     num_classes = len(class_names)
     model = SimpleCNN(num_classes=num_classes).to(device)
 
-    # Define loss function and optimizer
+ 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    # Store metrics for each epoch
+
     performance_data = {
          "epochs": [],
         "train_loss": [],
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     }
 
     
-    # Training function for classical CNN
+   
     def train_model(model, criterion, optimizer, num_epochs=25):
         since = time.time()
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
             print(f'Epoch {epoch}/{num_epochs - 1}')
             print('-' * 10)
             
-            epoch_start_time = time.time()  # Define start time for the epoch
+            epoch_start_time = time.time() 
 
             for phase in ['train', 'val']:
                 if phase == 'train':
@@ -137,13 +137,13 @@ if __name__ == '__main__':
                     performance_data['val_loss'].append(epoch_loss)
                     performance_data['val_acc'].append(epoch_acc.item())
 
-                    # Calculate precision, recall, and F1 score for validation set
+               
                     precision = precision_score(all_labels, all_preds, average='weighted')
                     recall = recall_score(all_labels, all_preds, average='weighted')
                     f1 = f1_score(all_labels, all_preds, average='weighted')
                     conf_matrix = confusion_matrix(all_labels, all_preds)
 
-                    # Store these metrics
+     
                     performance_data['precision'].append(precision)
                     performance_data['recall'].append(recall)
                     performance_data['f1_score'].append(f1)
@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
                 print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
 
-            # Log epoch duration
+          
             epoch_time = time.time() - epoch_start_time
             performance_data['train_time_per_epoch'].append(epoch_time)
             print(f'Epoch {epoch} took {epoch_time:.2f} seconds')
@@ -162,14 +162,14 @@ if __name__ == '__main__':
         return model
 
 
-        # Train the classical CNN model
+   
     model = train_model(model, criterion, optimizer, num_epochs=25)
 
-        # Calculate number of parameters
+       
     num_parameters = sum(p.numel() for p in model.parameters())
     performance_data['num_parameters'] = num_parameters
 
-     # Measure inference time per sample
+  
     inference_times = []
     for i, (inputs, labels) in enumerate(dataloaders['val']):
         inputs = inputs.to(device)
@@ -181,15 +181,15 @@ if __name__ == '__main__':
 
     performance_data['inference_time_per_sample'] = np.mean(inference_times)
 
-        # Save the trained model
+      
     torch.save(model.state_dict(), 'simple_cnn_model.pth')
 
     print(f"Model with {num_parameters} parameters saved as 'simple_cnn_model.pth'")
-        # Calculate model size in MB (after saving the model)
+        
     model_size_MB = os.path.getsize('simple_cnn_model.pth') / (1024 * 1024)
     performance_data['model_size_MB'] = model_size_MB
 
-        # Save performance data to a file
+      
     with open('simpleCNN_model_performance_data.json', 'w') as f:
             json.dump(performance_data, f, indent=4)
 
