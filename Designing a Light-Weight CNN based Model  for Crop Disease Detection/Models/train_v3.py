@@ -8,7 +8,7 @@ import numpy as np
 import json
 import os
 
-# Data transformations for train and validation sets
+
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomResizedCrop(224),
@@ -24,7 +24,7 @@ data_transforms = {
     ]),
 }
 
-# Define function to create datasets and dataloaders
+
 def create_dataloaders(data_dir):
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
                       for x in ['train', 'val']}
@@ -34,29 +34,28 @@ def create_dataloaders(data_dir):
     class_names = image_datasets['train'].classes
     return image_datasets, dataloaders, dataset_sizes, class_names
 
-# Wrap main block with __name__ check for multiprocessing
 if __name__ == '__main__':
     data_dir = r"C:\Users\AMREEN\OneDrive - Indian Institute of Technology Jodhpur\Desktop\SEM 3\FML CSL7670\Project\archive\New Plant Diseases Dataset(Augmented)\New Plant Diseases Dataset(Augmented)"  # Update with your data directory
     
-    # Create datasets and dataloaders
+  
     image_datasets, dataloaders, dataset_sizes, class_names = create_dataloaders(data_dir)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    # Load MobileNetV3 model (small version for edge computing)
+
     model = models.mobilenet_v3_small(weights="IMAGENET1K_V1")
 
-    # Modify the last layer to fit your number of classes
+   
     num_classes = len(class_names)
     model.classifier[3] = nn.Linear(model.classifier[3].in_features, num_classes)
 
     model = model.to(device)
 
-    # Define optimizer and criterion
+    
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    # Store metrics for each epoch
+ 
     performance_data = {
         "epochs": [],
         "train_loss": [],
@@ -73,7 +72,7 @@ if __name__ == '__main__':
         "num_parameters": 0
     }
 
-    # Training function
+  
     def train_model(model, criterion, optimizer, num_epochs=25):
         since = time.time()
 
@@ -85,9 +84,9 @@ if __name__ == '__main__':
 
             for phase in ['train', 'val']:
                 if phase == 'train':
-                    model.train()  # Set model to training mode
+                    model.train()  
                 else:
-                    model.eval()   # Set model to evaluation mode
+                    model.eval()  
 
                 running_loss = 0.0
                 running_corrects = 0
@@ -112,7 +111,7 @@ if __name__ == '__main__':
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
 
-                    # Collecting predictions and actual labels for later metrics
+               
                     all_preds.extend(preds.cpu().numpy())
                     all_labels.extend(labels.cpu().numpy())
 
@@ -126,19 +125,19 @@ if __name__ == '__main__':
                     performance_data['val_loss'].append(epoch_loss)
                     performance_data['val_acc'].append(epoch_acc.item())
 
-                    # Calculate precision, recall, and F1 score for validation set
+                    
                     precision = precision_score(all_labels, all_preds, average='weighted')
                     recall = recall_score(all_labels, all_preds, average='weighted')
                     f1 = f1_score(all_labels, all_preds, average='weighted')
                     conf_matrix = confusion_matrix(all_labels, all_preds)
 
-                    # Store these metrics
+                   
                     performance_data['precision'].append(precision)
                     performance_data['recall'].append(recall)
                     performance_data['f1_score'].append(f1)
                     performance_data['confusion_matrix'].append(conf_matrix.tolist())
 
-            # Calculate time taken for the epoch
+          
             epoch_time = time.time() - epoch_start_time
             performance_data['train_time_per_epoch'].append(epoch_time)
 
@@ -150,10 +149,9 @@ if __name__ == '__main__':
 
         return model
 
-    # Train the model
+  
     model = train_model(model, criterion, optimizer, num_epochs=25)
 
-    # Measure inference time per sample
     inference_times = []
     for i, (inputs, labels) in enumerate(dataloaders['val']):
         inputs = inputs.to(device)
@@ -165,18 +163,17 @@ if __name__ == '__main__':
     
     performance_data['inference_time_per_sample'] = np.mean(inference_times)
 
-    # Save the trained model
+
     torch.save(model.state_dict(), 'mobilenetv3_small_plant_disease.pth')
 
-    # Calculate model size in MB (after saving the model)
+    
     model_size_MB = os.path.getsize('mobilenetv3_small_plant_disease.pth') / (1024 * 1024)
     performance_data['model_size_MB'] = model_size_MB
 
-    # Calculate number of parameters
+ 
     num_parameters = sum(p.numel() for p in model.parameters())
     performance_data['num_parameters'] = num_parameters
 
-    # Save performance data to a file
     with open('model_performance_data.json', 'w') as f:
         json.dump(performance_data, f, indent=4)
 
