@@ -10,12 +10,12 @@ import torch.nn.functional as F
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 import numpy as np
 
-# Hard-Swish activation function
+
 class HardSwish(nn.Module):
     def forward(self, x):
         return x * F.relu6(x + 3) / 6
 
-# Squeeze-and-Excitation block
+
 class SqueezeExcitation(nn.Module):
     def __init__(self, channels, reduction=4):
         super(SqueezeExcitation, self).__init__()
@@ -30,24 +30,24 @@ class SqueezeExcitation(nn.Module):
     def forward(self, x):
         return x * self.se(x)
 
-# Bottleneck Block with optional SE block
+
 class BottleneckBlock(nn.Module):
     def __init__(self, in_channels, out_channels, expansion_factor, kernel_size, use_se=False, activation=nn.ReLU):
         super(BottleneckBlock, self).__init__()
         hidden_dim = in_channels * expansion_factor
         self.use_se = use_se
         self.block = nn.Sequential(
-            # 1x1 pointwise conv (expand)
+          
             nn.Conv2d(in_channels, hidden_dim, 1, bias=False),
             nn.BatchNorm2d(hidden_dim),
             activation(),
-            # Depthwise conv
+          
             nn.Conv2d(hidden_dim, hidden_dim, kernel_size, padding=kernel_size // 2, groups=hidden_dim, bias=False),
             nn.BatchNorm2d(hidden_dim),
             activation(),
-            # Optional SE block
+          
             SqueezeExcitation(hidden_dim) if use_se else nn.Identity(),
-            # 1x1 pointwise conv (project)
+           
             nn.Conv2d(hidden_dim, out_channels, 1, bias=False),
             nn.BatchNorm2d(out_channels)
         )
@@ -55,7 +55,7 @@ class BottleneckBlock(nn.Module):
     def forward(self, x):
         return self.block(x)
 
-# Define the modified SimpleMobileNetV3Lite architecture
+
 class SimpleMobileNetV3Lite(nn.Module):
     def __init__(self, num_classes):
         super(SimpleMobileNetV3Lite, self).__init__()
@@ -65,21 +65,21 @@ class SimpleMobileNetV3Lite(nn.Module):
             nn.BatchNorm2d(16),
             HardSwish()
         )
-        # Bottleneck blocks with SE and HardSwish where appropriate
+   
         self.bottlenecks = nn.Sequential(
-            BottleneckBlock(16, 16, expansion_factor=1, kernel_size=3, use_se=True),  # Initial bottleneck
-            BottleneckBlock(16, 24, expansion_factor=4, kernel_size=3),  # Without SE
-            BottleneckBlock(24, 24, expansion_factor=4, kernel_size=3),  # Without SE
-            BottleneckBlock(24, 40, expansion_factor=4, kernel_size=5, use_se=True),  # With SE
-            BottleneckBlock(40, 40, expansion_factor=4, kernel_size=5, use_se=True)   # With SE
+            BottleneckBlock(16, 16, expansion_factor=1, kernel_size=3, use_se=True),  
+            BottleneckBlock(16, 24, expansion_factor=4, kernel_size=3),  
+            BottleneckBlock(24, 24, expansion_factor=4, kernel_size=3),  
+            BottleneckBlock(24, 40, expansion_factor=4, kernel_size=5, use_se=True), 
+            BottleneckBlock(40, 40, expansion_factor=4, kernel_size=5, use_se=True)   
         )
-        # Final convolutional block
+      
         self.conv2 = nn.Sequential(
             nn.Conv2d(40, 96, kernel_size=1, bias=False),
             nn.BatchNorm2d(96),
             HardSwish()
         )
-        # Pooling and fully connected layer
+       
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Linear(96, num_classes)
 
@@ -88,11 +88,11 @@ class SimpleMobileNetV3Lite(nn.Module):
         x = self.bottlenecks(x)
         x = self.conv2(x)
         x = self.global_pool(x)
-        x = torch.flatten(x, 1)  # Flatten the tensor
+        x = torch.flatten(x, 1) 
         x = self.fc(x)
         return x
 
-# Data transformations
+
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomResizedCrop(224),
@@ -108,7 +108,7 @@ data_transforms = {
     ]),
 }
 
-# Create datasets and dataloaders
+
 def create_dataloaders(data_dir):
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir,x), data_transforms[x]) for x in ['train', 'val']}
     dataloaders = {x: DataLoader(image_datasets[x], batch_size=32, shuffle=True,num_workers=4) for x in ['train', 'val']}
@@ -119,16 +119,15 @@ def create_dataloaders(data_dir):
 if __name__ == '__main__':
     data_dir = r"C:\Users\AMREEN\OneDrive - Indian Institute of Technology Jodhpur\Desktop\SEM 3\FML CSL7670\Project\archive\New Plant Diseases Dataset(Augmented)\New Plant Diseases Dataset(Augmented)"
     
-    # Create datasets and dataloaders
+   
     image_datasets,dataloaders,dataset_sizes,class_names = create_dataloaders(data_dir)
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
-    # Instantiate the modified CNN model
     num_classes = len(class_names)
     model = SimpleMobileNetV3Lite(num_classes=num_classes).to(device)
 
-    # Define loss function and optimizer
+  
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     
@@ -148,12 +147,7 @@ if __name__ == '__main__':
         "num_parameters": 0
     }
 
-    # Training function
-    # Import statements remain the same
-
-# Hard-Swish, Squeeze-and-Excitation, BottleneckBlock, and SimpleMobileNetV3Lite definitions remain the same
-
-# Training function
+  
     def train_model(model, criterion, optimizer, num_epochs=25):
         since = time.time()
 
@@ -161,7 +155,7 @@ if __name__ == '__main__':
             print(f'Epoch {epoch}/{num_epochs - 1}')
             print('-' * 10)
 
-            epoch_start_time = time.time()  # Track epoch duration
+            epoch_start_time = time.time()  
 
             for phase in ['train', 'val']:
                 if phase == 'train':
@@ -191,7 +185,7 @@ if __name__ == '__main__':
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
 
-                    # Collect predictions and labels for metrics in the validation phase
+              
                     if phase == 'val':
                         all_preds.extend(preds.cpu().numpy())
                         all_labels.extend(labels.cpu().numpy())
@@ -206,13 +200,13 @@ if __name__ == '__main__':
                     performance_data['val_loss'].append(epoch_loss)
                     performance_data['val_acc'].append(epoch_acc.item())
 
-                    # Calculate precision, recall, and F1 score for validation set
+                  
                     precision = precision_score(all_labels, all_preds, average='weighted')
                     recall = recall_score(all_labels, all_preds, average='weighted')
                     f1 = f1_score(all_labels, all_preds, average='weighted')
                     conf_matrix = confusion_matrix(all_labels, all_preds)
 
-                    # Store these metrics
+                    
                     performance_data['precision'].append(precision)
                     performance_data['recall'].append(recall)
                     performance_data['f1_score'].append(f1)
@@ -220,7 +214,7 @@ if __name__ == '__main__':
 
                 print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
 
-            # Log epoch duration
+  
             epoch_time = time.time() - epoch_start_time
             performance_data['train_time_per_epoch'].append(epoch_time)
             print(f'Epoch {epoch} took {epoch_time:.2f} seconds')
@@ -230,7 +224,6 @@ if __name__ == '__main__':
 
         return model
 
-     # Measure inference time per sample
     inference_times = []
     for i, (inputs, labels) in enumerate(dataloaders['val']):
         inputs = inputs.to(device)
@@ -241,7 +234,7 @@ if __name__ == '__main__':
         inference_times.append(inference_time / inputs.size(0))
     
     performance_data['inference_time_per_sample'] = np.mean(inference_times)
-    # Train the modified CNN model
+   
     model=train_model(model , criterion , optimizer , num_epochs=25)
 
     torch.save(model.state_dict(), 'trial_2.pth')
@@ -250,11 +243,11 @@ if __name__ == '__main__':
     model_size_MB = os.path.getsize('trial_2.pth') / (1024 * 1024)
     performance_data['model_size_MB'] = model_size_MB
 
-    # Calculate number of parameters
+ 
     num_parameters = sum(p.numel() for p in model.parameters())
     performance_data['num_parameters'] = num_parameters
 
-        # Save performance data to a file
+      
     with open('ModifiedMobileNet_model_performance_data.json', 'w') as f:
             json.dump(performance_data, f, indent=4)
 
