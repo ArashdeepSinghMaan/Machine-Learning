@@ -1,3 +1,12 @@
+## Project Overview
+
+Our lightweight model is designed to offer **on-field disease detection**, improving both accessibility and efficiency for agricultural applications. This model is a **neural network inspired by the MobileNetV3 architecture** and is specifically tailored for **resource-constrained environments** such as mobile and edge devices.
+
+### Dataset
+
+The dataset used for this project is the [New Plant Diseases Dataset](https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset).
+
+
 ## Model Training Codes and Files(available under models folder)
 
 Below are the codes and trained models used for training and evaluation:
