@@ -1,4 +1,4 @@
-## Model Training Codes and Files(availble under models folder)
+## Model Training Codes and Files(available under models folder)
 
 Below are the codes and trained models used for training and evaluation:
 
