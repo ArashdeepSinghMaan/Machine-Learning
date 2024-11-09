@@ -17,4 +17,4 @@ These files have the following performance parameters:-
 | Model Size (MB)           | Total size of the model file, measured in megabytes (MB).                                     |
 | Number of Parameters      | Total number of parameters in the model.                                                      |
 
-![Plot of Performance Parameters of Our Model ](Designing a Light-Weight CNN based Model  for Crop Disease Detection/Performance/Figure_1.png)
+![Plot of Performance Parameters of Our Model ](/Figure_1.png)
