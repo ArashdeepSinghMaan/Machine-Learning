@@ -17,3 +17,4 @@ These files have the following performance parameters:-
 | Model Size (MB)           | Total size of the model file, measured in megabytes (MB).                                     |
 | Number of Parameters      | Total number of parameters in the model.                                                      |
 
+![Plot of Performance Parameters of Our Model ](images/screenshot.png)
